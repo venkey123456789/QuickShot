@@ -1,0 +1,7 @@
+bin/
+obj/
+Screenshots/
+*.exe
+*.user
+*.suo
+.vs/
