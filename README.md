@@ -4,6 +4,12 @@ QuickShot is a tiny Windows screenshot utility built for games and ordinary
 desktop windows. It runs in the system tray, captures the complete virtual
 desktop with **F11**, and lets you choose the screenshot folder.
 
+![QuickShot interface with the local waifu2x enhancement option](docs/images/quickshot-interface.png)
+
+[View synthetic upscaling examples](docs/IMAGE-EXAMPLES.md) for FSR, NIS,
+waifu2x and Real-ESRGAN. These examples use a generated test pattern, not
+personal screenshots.
+
 ## Features
 
 - Global F11 capture while a game or other window has focus

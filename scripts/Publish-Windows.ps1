@@ -13,6 +13,7 @@ foreach ($name in @('README.md','LICENSE','THIRD-PARTY-NOTICES.txt','VERIFICATIO
     Copy-Item -LiteralPath (Join-Path $root $name) -Destination $stage
 }
 Copy-Item -LiteralPath (Join-Path $root 'licenses') -Destination $stage -Recurse
+Copy-Item -LiteralPath (Join-Path $root 'docs') -Destination $stage -Recurse
 Copy-Item -LiteralPath $PSScriptRoot -Destination (Join-Path $stage 'scripts') -Recurse
 & (Join-Path $PSScriptRoot 'Install-Engines.ps1') -Destination (Join-Path $stage 'engines') -ArchiveCache $ArchiveCache
 $zip = Join-Path $dist 'QuickShot-win-x64.zip'
