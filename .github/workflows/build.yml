@@ -1,0 +1,18 @@
+name: Windows checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - name: Release build
+        run: dotnet build QuickShot.csproj -c Release
+      - name: Focused tests (GPU checks run on development hardware)
+        run: dotnet run --project Tests/QuickShot.Tests.csproj -c Release
+      - name: Single-file publish
+        run: dotnet publish QuickShot.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:DebugSymbols=false -p:DebugType=None

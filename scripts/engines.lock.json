@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "packages": [
+    {
+      "version": "20250915",
+      "url": "https://github.com/nihui/waifu2x-ncnn-vulkan/releases/download/20250915/waifu2x-ncnn-vulkan-20250915-windows.zip",
+      "sha256": "7425BE94B94E4C8F37A1E433AC0E0100C43790E2C37418F4B65D8235ADFBDC87",
+      "files": [
+        {
+          "path": "LICENSE",
+          "archivePath": "waifu2x-ncnn-vulkan-20250915-windows/LICENSE",
+          "sha256": "0100DDA18FAE09954490A58690D1DDD9355794A0A60DA80609C9A8886CA587C6"
+        },
+        {
+          "path": "README.md",
+          "archivePath": "waifu2x-ncnn-vulkan-20250915-windows/README.md",
+          "sha256": "16BD3B7E436C90C44E96BF7570A5D0DB74E25288443BF5F4B1EFF9ADC2670A3B"
+        },
+        {
+          "path": "vcomp140.dll",
+          "archivePath": "waifu2x-ncnn-vulkan-20250915-windows/vcomp140.dll",
+          "sha256": "55ABA23CDCD6484FBB06F4155B8CA75ADFCE7A881F10AFD0C49457165E677164"
+        },
+        {
+          "path": "waifu2x-ncnn-vulkan.exe",
+          "archivePath": "waifu2x-ncnn-vulkan-20250915-windows/waifu2x-ncnn-vulkan.exe",
+          "sha256": "7EF2EFC4C54E1A963046B3A9B0AEE6BCA5B1487A7C907373035A10F4187A733D"
+        },
+        {
+          "path": "models-cunet/scale2.0x_model.bin",
+          "archivePath": "waifu2x-ncnn-vulkan-20250915-windows/models-cunet/scale2.0x_model.bin",
+          "sha256": "D82ED30207FD07E1C16726A9CA838CE44E6E25A105B0278C7CA681516EE0E18E"
+        },
+        {
+          "path": "models-cunet/scale2.0x_model.param",
+          "archivePath": "waifu2x-ncnn-vulkan-20250915-windows/models-cunet/scale2.0x_model.param",
+          "sha256": "9B06073E039CA93D5BD79F6BB42016CD98D5BDEFA0E9761DF6B22B844C39965F"
+        }
+      ],
+      "name": "waifu2x",
+      "license": "licenses/waifu2x-ncnn-MIT.txt"
+    },
+    {
+      "version": "20220424-v0.2.5.0",
+      "url": "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-windows.zip",
+      "sha256": "ABC02804E17982A3BE33675E4D471E91EA374E65B70167ABC09E31ACB412802D",
+      "files": [
+        {
+          "path": "README_windows.md",
+          "archivePath": "README_windows.md",
+          "sha256": "2B882314A0C7A9F17A347B9B04F909939F6274AA96CF5B2EBBA2F7AB75987480"
+        },
+        {
+          "path": "realesrgan-ncnn-vulkan.exe",
+          "archivePath": "realesrgan-ncnn-vulkan.exe",
+          "sha256": "07E49F7CBB4EDE01AE4DD4C399D3A7E5846E3D2085C3128EFF881E55CB7B1A0C"
+        },
+        {
+          "path": "vcomp140.dll",
+          "archivePath": "vcomp140.dll",
+          "sha256": "8F72EF2E483465444B2059FC6744D6CB22CD8D8A27F6FA56BEFD2A42DCD0F78B"
+        },
+        {
+          "path": "models/realesrgan-x4plus.bin",
+          "archivePath": "models/realesrgan-x4plus.bin",
+          "sha256": "713EE713B0353AFAA27976F0563A64A5043BD70B9BD8936C2E26E25EBCDBCDDF"
+        },
+        {
+          "path": "models/realesrgan-x4plus.param",
+          "archivePath": "models/realesrgan-x4plus.param",
+          "sha256": "35330ECECCEA33B6C397A72548E788D5D53BECEE4734C50B7FADA36E89F10A86"
+        }
+      ],
+      "name": "realesrgan",
+      "license": "licenses/Real-ESRGAN-ncnn-MIT.txt"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+# Preserve pinned upstream shader bytes, including upstream whitespace.
+Shaders/ffx_a.h -text -whitespace
+Shaders/ffx_fsr1.h -text -whitespace
+Shaders/NIS_Config.h -text -whitespace
+Shaders/NIS_Main.hlsl -text -whitespace
+Shaders/NIS_Scaler.h -text -whitespace
+# Preserve the upstream license verbatim, including its final blank line.
+licenses/libwebp-BSD.txt -text -whitespace

@@ -10,4 +10,12 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Tests\**\*.cs" />
+    <InternalsVisibleTo Include="QuickShot.Tests" />
+    <EmbeddedResource Include="Shaders\*" />
+    <EmbeddedResource Include="THIRD-PARTY-NOTICES.txt" />
+    <PackageReference Include="Vortice.Direct3D11" Version="3.8.3" />
+    <PackageReference Include="Vortice.D3DCompiler" Version="3.8.3" />
+  </ItemGroup>
 </Project>

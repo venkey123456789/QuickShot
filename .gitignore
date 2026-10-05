@@ -5,3 +5,5 @@ Screenshots/
 *.user
 *.suo
 .vs/
+engines/
+dist/

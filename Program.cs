@@ -28,6 +28,9 @@ internal sealed class QuickShotForm : Form
     private readonly TextBox folderBox = new();
     private readonly Label statusLabel = new();
     private readonly NotifyIcon trayIcon = new();
+    private readonly ComboBox upscalingBox = new();
+    private readonly EnhancementWorker enhancementWorker = new();
+    private readonly string upscalingSettingsFile;
     private readonly LowLevelKeyboardProc keyboardProc;
     private readonly string settingsFile = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -39,17 +42,20 @@ internal sealed class QuickShotForm : Form
     private Thread? hotkeyPollingThread;
     private volatile bool stopHotkeyPolling;
     private int captureQueuedForCurrentPress;
-    private bool exiting;
+    private bool shuttingDown;
+    private bool shutdownComplete;
+    private string? latestCapturePath;
 
     public QuickShotForm()
     {
         keyboardProc = KeyboardHookCallback;
         screenshotFolder = LoadFolder();
+        upscalingSettingsFile = Path.Combine(Path.GetDirectoryName(settingsFile)!, "upscaling.txt");
 
         Text = "QuickShot";
         Icon = SystemIcons.Application;
-        ClientSize = new Size(540, 164);
-        MinimumSize = new Size(480, 203);
+        ClientSize = new Size(540, 202);
+        MinimumSize = new Size(480, 241);
         MaximizeBox = false;
         StartPosition = FormStartPosition.CenterScreen;
         Font = new Font("Segoe UI", 9F);
@@ -72,20 +78,35 @@ internal sealed class QuickShotForm : Form
         chooseButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         chooseButton.Click += (_, _) => ChooseFolder();
 
-        var captureButton = MakeButton("Screenshot Now", new Point(16, 86), new Size(126, 31));
+        var upscalingLabel = new Label
+        {
+            Text = "Upscaling", AutoSize = true, Location = new Point(16, 88)
+        };
+        upscalingBox.Name = "UpscalingMode";
+        upscalingBox.AccessibleName = "Upscaling";
+        upscalingBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        upscalingBox.Location = new Point(90, 84);
+        upscalingBox.Size = new Size(270, 25);
+        upscalingBox.Items.AddRange(["Off", "AMD FSR 1 — 4×", "waifu2x — 4× (AI)",
+            "Real-ESRGAN — 4× (AI)", "NVIDIA Image Scaling — 4×"]);
+        upscalingBox.SelectedIndex = (int)EnhancementSettings.Load(upscalingSettingsFile);
+        upscalingBox.SelectedIndexChanged += (_, _) => SaveUpscalingMode();
+
+        var captureButton = MakeButton("Screenshot Now", new Point(16, 124), new Size(126, 31));
         captureButton.Click += (_, _) => CaptureScreen();
 
-        var openButton = MakeButton("Open Folder", new Point(150, 86), new Size(108, 31));
+        var openButton = MakeButton("Open Folder", new Point(150, 124), new Size(108, 31));
         openButton.Click += (_, _) => OpenFolder();
 
         statusLabel.AutoEllipsis = true;
-        statusLabel.Location = new Point(16, 130);
+        statusLabel.Location = new Point(16, 168);
         statusLabel.Size = new Size(508, 22);
         statusLabel.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
         statusLabel.ForeColor = Color.DimGray;
         statusLabel.Text = "Ready. Minimize to keep QuickShot in the system tray.";
 
-        Controls.AddRange([title, folderBox, chooseButton, captureButton, openButton, statusLabel]);
+        Controls.AddRange([title, folderBox, chooseButton, upscalingLabel, upscalingBox, captureButton, openButton, statusLabel]);
+        enhancementWorker.Completed += OnEnhancementCompleted;
 
         var trayMenu = new ContextMenuStrip();
         trayMenu.Items.Add("Screenshot now", null, (_, _) => CaptureScreen());
@@ -212,6 +233,10 @@ internal sealed class QuickShotForm : Form
 
     private void CaptureScreen()
     {
+        if (shuttingDown) return;
+        // Snapshot mode before capture; queued work never reads mutable UI settings.
+        var mode = (UpscalingMode)upscalingBox.SelectedIndex;
+        bool enhance = mode != UpscalingMode.Off;
         try
         {
             Directory.CreateDirectory(screenshotFolder);
@@ -232,9 +257,26 @@ internal sealed class QuickShotForm : Form
                     CopyPixelOperation.SourceCopy);
             }
 
-            bitmap.Save(outputPath, ImageFormat.Png);
+            using (var output = new FileStream(outputPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                bitmap.Save(output, ImageFormat.Png);
+            latestCapturePath = outputPath;
             statusLabel.ForeColor = Color.DarkGreen;
             statusLabel.Text = $"Saved: {Path.GetFileName(outputPath)}";
+            if (enhance)
+            {
+                try
+                {
+                    EnhancementLimits.GetOutputSize(bitmap.Width, bitmap.Height);
+                    if (enhancementWorker.TryEnqueue(outputPath, mode))
+                        statusLabel.Text = "Original saved; creating the 4× copy…";
+                    else
+                    {
+                        statusLabel.ForeColor = Color.DarkOrange;
+                        statusLabel.Text = "Original saved; 4× skipped — busy.";
+                    }
+                }
+                catch (Exception ex) { ReportEnhancementError(outputPath, ex.Message); }
+            }
         }
         catch (Exception ex)
         {
@@ -249,13 +291,69 @@ internal sealed class QuickShotForm : Form
         }
     }
 
+    private void SaveUpscalingMode()
+    {
+        try
+        {
+            EnhancementSettings.Save(upscalingSettingsFile, (UpscalingMode)upscalingBox.SelectedIndex);
+            statusLabel.ForeColor = Color.DimGray;
+            statusLabel.Text = upscalingBox.SelectedIndex == 0
+                ? "Upscaling off. Screenshots save at their original size."
+                : upscalingBox.SelectedIndex is 2 or 3
+                    ? "AI saves a separate 4× copy; textures/text may change. Processing can take longer."
+                    : "Each capture keeps the original and saves a sharpened 4× copy.";
+        }
+        catch (Exception ex)
+        {
+            statusLabel.ForeColor = Color.DarkOrange;
+            statusLabel.Text = "Upscaling selected, but the preference could not be saved: " + ex.Message;
+        }
+    }
+
+    private void OnEnhancementCompleted(EnhancementJob job, string? error)
+    {
+        string path = job.OriginalPath;
+        if (shuttingDown || IsDisposed || !IsHandleCreated) return;
+        try
+        {
+            BeginInvoke((Action)(() =>
+            {
+                if (shuttingDown || IsDisposed) return;
+                if (error is not null) ReportEnhancementError(path, error);
+                else if (path == latestCapturePath)
+                {
+                    statusLabel.ForeColor = Color.DarkGreen;
+                    statusLabel.Text = "Saved original + 4×: " + Path.GetFileName(job.OutputPath);
+                }
+            }));
+        }
+        catch (InvalidOperationException) { /* The form closed before the callback was posted. */ }
+    }
+
+    private void ReportEnhancementError(string originalPath, string error)
+    {
+        if (originalPath == latestCapturePath)
+        {
+            statusLabel.ForeColor = Color.DarkOrange;
+            statusLabel.Text = "Original saved; 4× enhancement failed: " + error;
+        }
+        if (!Visible)
+        {
+            trayIcon.BalloonTipTitle = "QuickShot: original saved, 4× copy failed";
+            trayIcon.BalloonTipText = Path.GetFileName(originalPath) + ": " + error;
+            trayIcon.ShowBalloonTip(3000);
+        }
+    }
+
     private string NextScreenshotPath()
     {
         string timestamp = DateTime.Now.ToString(
             "yyyy-MM-dd_HH-mm-ss-fff",
             CultureInfo.InvariantCulture);
         string path = Path.Combine(screenshotFolder, $"Screenshot_{timestamp}.png");
-        for (int suffix = 2; File.Exists(path); suffix++)
+        for (int suffix = 2; File.Exists(path) || Enum.GetValues<UpscalingMode>()
+            .Where(mode => mode != UpscalingMode.Off)
+            .Any(mode => File.Exists(EnhancementSettings.OutputPath(path, mode))); suffix++)
             path = Path.Combine(screenshotFolder, $"Screenshot_{timestamp}_{suffix}.png");
         return path;
     }
@@ -338,17 +436,25 @@ internal sealed class QuickShotForm : Form
 
     private void ExitApplication()
     {
-        exiting = true;
         Close();
     }
 
-    private void OnFormClosing(object? sender, FormClosingEventArgs e)
+    private async void OnFormClosing(object? sender, FormClosingEventArgs e)
     {
-        if (!exiting && e.CloseReason == CloseReason.UserClosing)
-            exiting = true;
-
-        trayIcon.Visible = false;
-        trayIcon.Dispose();
+        if (shutdownComplete) return;
+        e.Cancel = true;
+        if (shuttingDown) return;
+        shuttingDown = true;
+        enhancementWorker.Completed -= OnEnhancementCompleted;
+        statusLabel.Text = "Closing; cancelling pending enhancements…";
+        try { await enhancementWorker.StopAsync(); }
+        finally
+        {
+            shutdownComplete = true;
+            trayIcon.Visible = false;
+            trayIcon.Dispose();
+            Close();
+        }
     }
 
     private delegate IntPtr LowLevelKeyboardProc(int code, IntPtr wParam, IntPtr lParam);
