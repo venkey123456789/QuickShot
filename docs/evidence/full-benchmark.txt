@@ -1,0 +1,3 @@
+BENCH Nis4x: 13760x5760; processing=0.95s; including PNG=3.16s
+BENCH Waifu2x4x: 13760x5760; processing=6.56s; including PNG=9.11s
+BENCH RealEsrgan4x: 13760x5760; processing=24.47s; including PNG=28.37s

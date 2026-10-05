@@ -1,136 +1,117 @@
 # QuickShot
 
-QuickShot is a tiny Windows screenshot utility built for games and ordinary
-desktop windows. It runs in the system tray, captures the complete virtual
-desktop with **F11**, and lets you choose the screenshot folder.
+Press **F11** to save a screenshot. QuickShot runs in the Windows system tray
+and lets you choose where to save your pictures.
 
-![QuickShot interface with the local waifu2x enhancement option](docs/images/quickshot-interface.png)
+![QuickShot app](docs/images/quickshot-interface.png)
 
-[View synthetic upscaling examples](docs/IMAGE-EXAMPLES.md) for FSR, NIS,
-waifu2x and Real-ESRGAN. These examples use a generated test pattern, not
-personal screenshots.
+## Download and run
 
-## Features
+1. Download **QuickShot-win-x64.zip** from the [latest release](https://github.com/venkey123456789/QuickShot/releases/latest).
+2. Extract the whole ZIP. Keep the `engines` folder next to `QuickShot.exe`.
+3. Install the [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) if needed.
+4. Open `QuickShot.exe` and accept the Windows admin prompt.
+5. Click **Choose** to pick a save folder, or use the default `Screenshots` folder next to the EXE.
+6. Click **Screenshot Now**, press **F11**, or use the tray menu to take a screenshot.
 
-- Global F11 capture while a game or other window has focus
-- Multi-monitor screenshots saved as PNG
-- Selectable output folder with the choice remembered between launches
-- System-tray operation with Capture, Open, and Exit commands
-- Key-repeat protection so one press creates one screenshot
-- Optional 4× enhancement: AMD FSR 1, NVIDIA Image Scaling, waifu2x, Real-ESRGAN
-- No telemetry, network access, accounts, or background services
+The app remembers your folder. You can change it at any time.
+If you have more than one monitor, QuickShot saves the full desktop in one PNG.
 
-## Download
+## Make a larger copy
 
-Download `QuickShot-win-x64.zip` from the [latest release](../../releases/latest),
-extract the whole ZIP, and run `QuickShot.exe`. Keep the `engines` folder beside
-the EXE: it contains the local AI tools and models. Moving only the EXE keeps
-FSR and NIS available but prevents AI processing.
+Choose a mode in **Upscaling**. QuickShot saves the original first, then saves
+an extra 4× copy. Choose **Off** to save only the original.
 
-QuickShot requires the [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0).
-
-## Use
-
-1. Run `QuickShot.exe` and approve the Windows administrator prompt. Elevated
-   access allows the F11 listener to work when an elevated game has focus.
-2. Select **Choose Folder** if you want a custom destination.
-3. Minimize QuickShot to the system tray.
-4. Press **F11** to capture the complete desktop.
-
-By default, screenshots are stored in a `Screenshots` folder beside the EXE.
-
-### Optional 4× screenshots
-
-Select a mode under **Upscaling**. Every capture first saves its original
-PNG, then creates a second file in the same folder:
-
-| Mode | Output suffix | Processing |
+| Mode | Extra file name ends with | What it uses |
 |---|---|---|
-| AMD FSR 1 — 4× | `_FSR4x.png` | EASU enlargement and gentle RCAS sharpening |
-| NVIDIA Image Scaling — 4× | `_NIS4x.png` | Two 2× NIS passes, low final sharpening |
-| waifu2x — 4× (AI) | `_waifu2x4x.png` | cunet model, denoising disabled |
-| Real-ESRGAN — 4× (AI) | `_RealESRGAN4x.png` | General-image realesrgan-x4plus model |
+| AMD FSR 1 | `_FSR4x.png` | A fast resize and sharpening filter |
+| NVIDIA Image Scaling | `_NIS4x.png` | NVIDIA's image filter; also tested on AMD |
+| waifu2x | `_waifu2x4x.png` | A local AI model, with noise removal off |
+| Real-ESRGAN | `_RealESRGAN4x.png` | A local AI model for general images |
 
-For example, a 3440×1440 screenshot produces a 13760×5760 copy. The choice is
-remembered between launches; it defaults to **Off**.
+**4× means four times the width and height.** A 3440 × 1440 screenshot becomes
+13760 × 5760. That is 16 times as many pixels, so it takes more memory and disk
+space. The app remembers your choice. It starts with Off on a fresh install.
+Old 2× settings also reset to Off.
 
-4× means four times the width and height (16 times the pixels). Previous 2×
-preferences reset to Off; select 4× explicitly. The larger image uses more
-memory and disk space and cannot recover missing detail. Fine text and edges
-may still show enlargement artifacts.
+The original is always kept. If an extra copy fails, the app shows an error
+and leaves the original alone. One image can be processed while one waits.
+If the queue is full, new captures still save their originals.
+Closing the app cancels unfinished extra copies.
 
-Enhancement runs in the background, with one active image and one waiting.
-If both slots are occupied, another capture still saves its original and
-reports that the 4× copy was skipped. Closing QuickShot cancels pending
-enhancements; originals already saved remain available.
+Everything runs on your PC. There are no accounts, uploads, servers or
+per-image fees. The AI modes need the bundled `engines` folder. FSR and NIS
+work without it.
 
-FSR and NIS are spatial filters. The AI modes can change textures and text;
-always keep the original for an accurate record. None of these modes increases
-game FPS or guarantees native-resolution detail. NIS works on compatible AMD
-hardware too; it is a separate NVIDIA algorithm from DLSS.
+## See the difference
 
-Everything runs locally without screenshot uploads, servers, accounts or
-per-image fees. AI uses a hidden Vulkan process only during enhancement.
-An AI job has a 15-minute timeout and is stopped on exit. All modes share one
-active slot and one waiting slot, with each job retaining its capture-time
-mode and destination. AI can compete with games for GPU resources.
+![Original, NIS, waifu2x and Real-ESRGAN comparison](docs/evidence/comparison.png)
+
+This shows the same part of an image at matching display sizes. AI can make
+edges look smoother, but it can also change text and small details. A bigger
+image is not proof that missing detail has been recovered. These modes do
+not increase game FPS.
+
+[See more images and test evidence](docs/IMAGE-EXAMPLES.md).
+
+## What was tested
+
+- 22 local tests passed, including the real FSR, NIS and AI processing.
+- Screenshot Now, F11 and tray capture worked with the three new modes.
+- GitHub's Windows build, basic tests and publish checks passed.
+- GPU tests ran on an RX 7900 XTX. Other GPU models have not been tested.
+
+[Test details and measured times](VERIFICATION.md).
+
+## Limits
+
+- FSR and NIS need Direct3D 11 hardware with feature level 11.0 or higher.
+- The AI modes need a graphics driver that supports Vulkan.
+- Extra copies cannot exceed 16,384 pixels on either side or 80 million pixels in total.
+- An AI job stops after 15 minutes if it has not finished.
+- Processing can compete with a running game for GPU power.
+- This version handles SDR screenshots. It does not capture or rebuild HDR.
+- Protected video and some fullscreen or anti-cheat games may block capture. Try borderless or windowed mode.
+- The admin prompt lets the F11 listener work when an elevated game has focus.
+
+NIS is not DLSS. SUPIR and diffusion models are not included.
 
 ## Build from source
 
-Requirements: Windows and the .NET 9 SDK.
+You need Windows and the .NET 9 SDK.
 
 ```powershell
 dotnet build .\QuickShot.csproj -c Release
-dotnet publish .\QuickShot.csproj -c Release -r win-x64 --self-contained false `
-  -p:PublishSingleFile=true -p:DebugSymbols=false -p:DebugType=None
-```
-
-Run the focused Windows tests, including actual GPU shader execution:
-
-```powershell
 dotnet run --project .\Tests\QuickShot.Tests.csproj -c Release -- --gpu
-# Fixed 3440×1440 fixture, two warmups and ten measured GPU runs:
-dotnet run --project .\Tests\QuickShot.Tests.csproj -c Release -- --benchmark
 ```
 
-To install the pinned AI engines/models when building from source and create
-the complete Windows package (PowerShell 7 recommended):
+Install the AI tools and run all tests:
 
 ```powershell
 .\scripts\Install-Engines.ps1
 $env:QUICKSHOT_ENGINE_ROOT = "$PWD\engines"
 dotnet run --project .\Tests\QuickShot.Tests.csproj -c Release -- --gpu --ai
+```
+
+The setup script downloads about 81 MB from the original projects. It checks
+the files against the saved SHA256 hashes. The finished app needs no downloads.
+
+Build the complete ZIP, including AI models and docs:
+
+```powershell
 .\scripts\Publish-Windows.ps1
 ```
 
-The setup script downloads about 81 MB from the upstream GitHub releases and
-verifies pinned archive and file SHA256 hashes. The packaged app needs no
-downloads at runtime. Only the selected models are included. Neither SUPIR
-nor diffusion models are included.
+To publish only the EXE:
 
-The shaders and their license notices are embedded in the published EXE.
-The app needs no shader files, model downloads, or network access at runtime.
+```powershell
+dotnet publish .\QuickShot.csproj -c Release -r win-x64 --self-contained false `
+  -p:PublishSingleFile=true -p:DebugSymbols=false -p:DebugType=None
+```
 
-## Compatibility notes
-
-QuickShot captures the Windows desktop image. Protected video, secure Windows
-screens, and some true exclusive-fullscreen or anti-cheat-protected games can
-block normal desktop capture. Borderless or windowed mode is the most broadly
-compatible option in those cases.
-
-The administrator requirement is declared in `app.manifest`. The hotkey uses a
-low-level keyboard hook plus physical-key polling; all processing remains local.
-
-Upscaling supports the existing SDR screenshot path. FSR and NIS require a
-hardware Direct3D 11 feature-level 11.0 device; AI requires a compatible Vulkan
-driver. AMD, NVIDIA and Intel hardware can meet those requirements; only
-hardware actually tested is covered by test evidence.
-Enhanced output is limited to 16,384 pixels on either side and 80 million
-pixels total. Unsupported sizes or GPU failures leave the original intact.
-Native HDR capture and HDR reconstruction are not supported.
+FSR and NIS shader files are built into the EXE. The AI models stay in `engines`.
 
 ## License
 
-[MIT](LICENSE)
-
-Third-party code and bindings are identified in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt).
+QuickShot uses the [MIT license](LICENSE). See
+[third-party notices](THIRD-PARTY-NOTICES.txt) for the tools and models it uses.

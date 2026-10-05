@@ -1,0 +1,23 @@
+PASS: all modes persist and publish distinct companion names
+PASS: queued jobs retain mode and survive a throwing subscriber
+PASS: missing AI engine preserves original and reports failure
+PASS: AI arguments preserve paths and fixed model selection
+PASS: AI process exit failures and cancellation are observed
+PASS: real NIS shaders handle solids, borders and odd dimensions
+PASS: real Vulkan AI runtime: Waifu2x4x
+PASS: real Vulkan AI runtime: RealEsrgan4x
+PASS: all requested enhancement modes exist
+PASS: missing preference defaults to Off
+PASS: preference roundtrip preserves legacy folder
+PASS: 4x dimensions and exact pixel ceiling
+PASS: enhanced PNG is atomic and never overwrites
+PASS: cancelled enhancement does not publish or leave temporary files
+PASS: worker allows one active plus one waiting job
+PASS: GPU failure preserves original and reports enhancement error
+PASS: queued captures keep their own folder when the destination changes
+PASS: exit cancels active publishing and pending jobs
+PASS: real FSR shaders preserve solid colors including borders
+PASS: FSR retains orientation, color order and opaque output
+PASS: gradient, diagonal and HUD fixture produces complete PNG
+PASS: negative bitmap stride retains top and bottom orientation
+RESULT: 22 passed, 0 failed.

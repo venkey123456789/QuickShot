@@ -1,0 +1,8 @@
+PASS button _waifu2x4x 3440x1440 -> 13760x5760 Screenshot_2026-10-05_14-04-59-832_waifu2x4x.png
+PASS F11 _RealESRGAN4x 3440x1440 -> 13760x5760 Screenshot_2026-10-05_14-05-11-946_RealESRGAN4x.png
+FAIL: QuickShot tray icon not exposed by Windows UI Automation
+Tray bounds 2820024,1,3013,1380,3053,1440
+FAIL: A positional parameter cannot be found that accepts argument '[UiNative]::mouse_event'.
+Tray bounds 2820024,1,3013,1380,3053,1440
+PASS tray _NIS4x 3440x1440 -> 13760x5760 Screenshot_2026-10-05_14-08-08-718_NIS4x.png
+RESULT: installed tray flow passed
